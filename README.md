@@ -1,2 +1,3 @@
-# kb-starter-projects
-Container for various starter projects and templates
+# Michael Hoffman - Knowledge Base - Starter Projects
+
+This repository is meant to be a container for various starter projects and templates. 
