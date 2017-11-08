@@ -1,0 +1,131 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven { url 'http://repo.spring.io/plugins-release' }
+        maven { url 'http://repo.spring.io/milestone' }
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath ("org.springframework.boot:spring-boot-gradle-plugin:${spring_boot_version}")
+        classpath group: 'com.moowork.gradle', name: 'gradle-node-plugin', version: '0.11'
+  	    classpath group: 'com.moowork.gradle', name: 'gradle-gulp-plugin', version: '0.11'
+    }
+}
+
+plugins {
+	id "jvm-component"
+	id "java-lang"
+}
+
+group = 'com.michaelhoffmantech'
+description = ''
+
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'spring-boot'
+apply plugin: 'application'
+sourceCompatibility=1.6
+targetCompatibility=1.6
+mainClassName = 'com.michaelhoffmantech.angular1springbootstarter.Application'
+apply plugin: 'war'
+ext.semanticVersionBase = '0.2.0'
+apply from: 'gradle/version.gradle'
+apply from: 'gradle/docker.gradle'
+apply from: 'gradle/nodejs.gradle'
+defaultTasks 'gulp_serve'
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '2.11'
+}
+
+jar {
+	manifest = project.manifest {
+		from versionManifest
+	}
+}
+
+war {
+	manifest = project.manifest {
+		from versionManifest
+	}
+}
+
+bootRepackage {
+	mainClass = mainClassName
+}
+
+springBoot {
+	mainClass = mainClassName
+	executable = true
+}
+
+bootRun {
+	addResources = false
+}
+
+repositories {
+	mavenCentral()
+	jcenter()
+}
+
+war.archiveName = "angular-1-spring-boot-starter.war"
+
+bootRepackage {
+  enabled = false
+}
+
+ext['tomcat.version'] = '7.0.59' // Need to use old JDK 1.6 compatible version of Tomcat
+dependencies {
+	compile "org.springframework.boot:spring-boot-legacy:1.0.2.RELEASE"
+    compile('org.springframework.boot:spring-boot-starter-hateoas')
+	compile 'org.springframework.boot:spring-boot-starter-security'
+	compile("org.springframework.boot:spring-boot-starter-actuator")
+	compile('org.springframework.boot:spring-boot-starter-web') {
+		exclude module: 'spring-boot-starter-tomcat'
+	}
+	
+	//compile('org.springframework.boot:spring-boot-starter-remote-shell') // if we need to debug issues, this enables a remote SSH into server
+	
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+
+	// Utilities
+	compile "com.google.guava:guava:18.0"
+	
+	compile 'org.apache.commons:commons-lang3:3.4'
+	compile 'org.apache.httpcomponents:httpclient:4.5.1'
+	compile 'javax.inject:javax.inject:1'
+
+	// Metrics
+	compile 'io.dropwizard.metrics:metrics-core'
+	compile "io.dropwizard.metrics:metrics-annotation:${dropwizard_metrics_version}"
+	//compile "io.dropwizard.metrics:metrics-ehcache:${dropwizard_metrics_version}"
+	compile "io.dropwizard.metrics:metrics-graphite:${dropwizard_metrics_version}"
+	compile "io.dropwizard.metrics:metrics-healthchecks:${dropwizard_metrics_version}"
+	compile "io.dropwizard.metrics:metrics-jvm:${dropwizard_metrics_version}"
+	compile "io.dropwizard.metrics:metrics-servlet:${dropwizard_metrics_version}"
+	compile "io.dropwizard.metrics:metrics-json:${dropwizard_metrics_version}"
+	compile ("io.dropwizard.metrics:metrics-servlets:${dropwizard_metrics_version}") {
+		exclude(module: 'metrics-healthchecks')
+	}
+	compile ("com.ryantenney.metrics:metrics-spring:${metrics_spring_version}") {
+		exclude(module: 'metrics-core')
+		exclude(module: 'metrics-healthchecks')
+	}
+
+	// JDK 1.6 issues
+	//compile "fr.ippon.spark.metrics:metrics-spark-reporter:${metrics_spark_reporter_version}"
+
+	// Test Dependencies
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+compileJava.dependsOn(processResources)
+
+clean {
+	delete "target"
+}
+
+task stage(dependsOn: 'bootRepackage') {
+}

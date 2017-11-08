@@ -1,6 +1,6 @@
 {
   "server": {
-    "baseDir": "src",
+    "baseDir": "src/main/resources/static",
     "routes": {
       "/node_modules": "node_modules"
     }

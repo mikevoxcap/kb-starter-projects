@@ -1,0 +1,80 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+apply plugin: 'com.moowork.node'
+apply plugin: 'com.moowork.gulp'
+
+node {
+	// Version of node to use.
+	version = '5.5.0'
+
+	// Base URL for fetching node distributions (change if you have a mirror).
+	distBaseUrl = 'https://nodejs.org/dist'
+
+	// If true, it will download node using above parameters.
+	// If false, it will try to use globally installed node.
+	download = true
+
+	// Set the work directory for unpacking node
+	workDir = file("${project.buildDir}/nodejs")
+
+	// Set the work directory where node_modules should be located
+	nodeModulesDir = file("${project.projectDir}")
+}
+
+task npmRebuildSass(type: NpmTask, dependsOn: 'npmInstall') {
+	args = ["rebuild", "node-sass"]
+	inputs.files file('package.json')
+	outputs.files file('node_modules/node-sass')
+}
+
+
+task bowerInstall(type: NodeTask, dependsOn: ['npmInstall', 'npmRebuildSass']) {
+	script = file('node_modules/bower/bin/bower')
+	args = ["--config.storage.cache=${gradle.getGradleUserHomeDir()}/caches/bower/cache",
+			"--config.storage.packages=${gradle.getGradleUserHomeDir()}/caches/bower/packages",
+			"--config.storage.registry=${gradle.getGradleUserHomeDir()}/caches/bower/registry",
+			'install']
+	inputs.files file('bower.json')
+	outputs.files file('bower_components')
+}
+
+task gulp_tasks(type: NodeTask, description: "gulp tasks to list the gulp tasks") {
+	script = file('node_modules/.bin/gulp')
+	args = [
+		'tasks'
+	]
+}
+
+/**
+ * Creating this task because you apparently can't run: gradlew gulp_test:auto
+ */
+task gulp_test_auto(type: NodeTask, dependsOn: ['bowerInstall'], description: "gulp test:auto task that runs tests automatically on code changes") {
+	script = file('node_modules/.bin/gulp')
+	args = [
+		'test:auto'
+	]
+}
+
+gulp_build.dependsOn 'npmInstall'
+gulp_build.dependsOn 'bowerInstall'
+
+gulp_build.inputs.dir 'src/main/resources/static/scripts'
+
+gulp_build.outputs.dir 'src/main/resources/static/dist'
+gulp_build.outputs.dir 'src/main/resources/static/dev'
+
+processResources.dependsOn gulp_build
+test.dependsOn gulp_test
+
+gulp_serve.dependsOn 'gulp_build'
+
+/**
+ * Don't want to use gulp_clean because it requires node/npm/gulp
+ */
+task gulpClean {
+	doLast {
+		delete file('src/main/resources/static/dist')
+		delete file('src/main/resources/static/dev')
+	}
+}
+
+clean.dependsOn 'gulpClean'

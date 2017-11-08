@@ -30,6 +30,26 @@ are meant to help with static templating, etc.
 The quickstart from Angular is simply a zip download. I unzipped it, moved files into the project and 
 manipulated as needed. 
 
+### package.json
+
+* I needed to change from using src/ to src/main/webapp/. This was changed for the build, build watch and lint scripts. 
+
+### bs-config.json
+
+* I needed to change from using src to src/main/resources/static. 
+
+### bs-config.e2e.json
+
+* I needed to change baseDir from src to src/main/resources/static.
+
+### karma.conf.js
+
+* I needed to change the appBase value from src/ to src/main/resources/static/
+
+### karma-test-shim.js
+
+* I needed to change the builtPaths value to use src/main/resources/static/. 
+
 
 
 

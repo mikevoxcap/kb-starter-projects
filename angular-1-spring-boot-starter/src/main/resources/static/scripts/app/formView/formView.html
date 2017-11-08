@@ -1,0 +1,12 @@
+<div class="container-fluid">
+	<div ng-show="formView.navbarEnabled" class="hidden-print">
+		<navbar user-name="{{formView.userName}}"
+      		nav-line1="{{formView.navLine1}}" nav-line2="{{formView.navLine2}}"
+      		nav-line3="{{formView.navLine3}}"></navbar>
+	</div>
+	<div ng-show="formView.navbarEnabled" class="hidden-print app-breadcrumb app-breadcrumb-border">
+    <div class="row">
+      <div class="col-md-12 app-breadcrumb-header-line">FORM DATA VIEW</div>
+      <div class="col-md-12">Viewing form number: {{formView.formNumber}}</div>
+    </div>
+</div>

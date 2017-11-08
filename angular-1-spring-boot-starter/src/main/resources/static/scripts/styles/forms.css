@@ -1,0 +1,74 @@
+.Rectangle {
+	position: absolute;
+	border-style: solid;
+	border-width: 1px;
+	border-color: black;
+}
+
+.Line {
+	position: absolute;
+	border-style: solid;
+	border-top: 1px;
+	border-right: 1px;
+	border-bottom: 0px;
+	border-left: 0px;
+	border-color: black;
+}
+
+.typeahead-demo .custom-popup-wrapper {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 1000;
+	display: none;
+	background-color: #f9f9f9;
+}
+
+.typeahead-demo .custom-popup-wrapper>.message {
+	padding: 10px 20px;
+	border-bottom: 1px solid #ddd;
+	color: #868686;
+}
+
+.typeahead-demo .custom-popup-wrapper>.dropdown-menu {
+	position: static;
+	float: none;
+	display: block;
+	min-width: 400px;
+	background-color: transparent;
+	border: none;
+	border-radius: 0;
+	box-shadow: none;
+}
+
+.dropdown-menu {
+	min-width: 350px;
+}
+
+.ng-invalid {
+	border-color: #FA787E; // Red
+}
+
+/* .ng-valid {
+	border-color: #78FA89; // Green
+} */
+
+form > div {
+	padding-left: 5px;
+}
+
+<!-- OVERRIDES -->
+input[type="radio"], input[type="checkbox"] {
+}
+
+input[type="radio"], input[type="checkbox"] {
+    margin-top: 1px \9;
+    margin-left: 4px;
+    line-height: normal;
+}
+
+
+label {
+	margin-top: 5px;
+	margin-bottom: 0px;
+}

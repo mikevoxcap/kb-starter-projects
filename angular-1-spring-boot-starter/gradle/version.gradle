@@ -1,0 +1,126 @@
+ext.buildTimestamp = new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ") //('yyyy-MM-dd HH:mm:ss z')
+
+// BUILD_NUMBER should come from buildbox builds
+if (project.hasProperty('semanticVersionBase')) {
+	project.version = new ProjectVersion(project.semanticVersionBase, System.env.BUILD_NUMBER)
+} else {
+	String msg = "version.gradle requires you to define ext.semanticVersionBase = '#.#.#'"
+	println msg
+	throw new IllegalStateException(msg)
+}
+
+ext.versionManifest = manifest {
+	attributes(
+		"Implementation-Title": project.name,
+        "Implementation-Version": project.version,
+		"Implementation-Timestamp": project.buildTimestamp
+	)
+}
+
+class ProjectVersion {
+	Integer major
+	Integer minor
+	Integer patch
+	String build
+
+	ProjectVersion(String semanticVersion, String build) {
+		def parts = semanticVersion.tokenize('.')
+		if (parts.size() != 3) {
+			String msg = "invalid semanticVersion [${semanticVersion}], must be #.#.#"
+			println msg
+			throw new IllegalArgumentException(msg)
+		}
+		try {
+			this.major = Integer.parseInt(parts[0])
+			this.minor = Integer.parseInt(parts[1])
+			this.patch = Integer.parseInt(parts[2])
+		} catch (Exception e) {
+			String msg = "invalid semanticVersion [${semanticVersion}], must be #.#.#"
+			println msg
+			throw new IllegalArgumentException(msg)
+		}
+		this.build = build
+	}
+
+	ProjectVersion(Integer major, Integer minor, Integer patch, String build) {
+		this.major = major
+		this.minor = minor
+		this.patch = patch
+		this.build = build
+	}
+
+	@Override
+	String toString() {
+		String fullVersion = "${major}.${minor}.${patch}"
+
+		if (build) {
+			fullVersion += "-BUILD-${build}"
+		} else {
+			fullVersion += "-SNAPSHOT"
+		}
+
+		fullVersion
+	}
+}
+
+task createBuildInfoFile {
+	def buildInfoDir = new File("${buildDir}/resources/main/META-INF")
+	def buildInfoFile = new File("${buildDir}/resources/main/META-INF/build-info.properties")
+
+	inputs.sourceDir project.sourceSets.main.allSource.srcDirs
+	outputs.files buildInfoFile
+
+	doLast {
+		buildInfoDir.mkdirs()
+		Properties props = new Properties()
+		props.setProperty("info.build.projectname", project.name)
+		props.setProperty("info.build.version", project.version.toString())
+		props.setProperty("info.build.timestamp", project.buildTimestamp)
+		props.setProperty("info.build.by.username", System.getProperty("user.name"));
+		try {
+			props.setProperty("info.build.by.hostname", InetAddress.getLocalHost().getHostName())
+		} catch (Exception e) {
+			props.setProperty("info.build.by.hostname", "unknown");
+		}
+		try {
+			props.setProperty("info.build.scm.hash", "git rev-parse HEAD".execute().text.trim())
+			props.setProperty("info.build.scm.untracked_or_dirty", Boolean.toString("git status --porcelain".execute().text.trim().length() != 0))
+			// Not sure if we want a long list of tags
+			//def lastTag = "git describe --abbrev=0 --tags".execute().text.trim()
+			//props.setProperty("info.build.scm.most_recent_tag", lastTag)
+			//props.setProperty("info.build.scm.commits_since_tag", Integer.toString("git log ${lastTag}..HEAD --oneline".execute().text.trim().split(System.getProperty("line.separator")).length))
+			//props.setProperty("info.build.scm.up_to_date_with_remote", Boolean.toString("git fetch --dry-run".execute().text.trim().length() == 0))
+		} catch (Exception e) {
+			props.setProperty("info.build.scm.error_getting_info", e.getMessage());
+		}
+		props.store(buildInfoFile.newWriter(), null)
+	}
+}
+
+task createBuildInfoJsonFile {
+	def buildInfoDir = new File("${buildDir}/resources/main/static")
+	def buildInfoFile = new File("${buildDir}/resources/main/static/build-info.json")
+
+	inputs.sourceDir project.sourceSets.main.allSource.srcDirs
+	outputs.files buildInfoFile
+
+	doLast {
+		buildInfoDir.mkdirs()
+		buildInfoFile.text = """{
+	"projectname": "${project.name}",
+	"version": "${project.version}",
+	"timestamp": "${project.buildTimestamp}"
+}
+"""
+	}
+}
+
+task version {
+	println "Version: ${project.version}" 
+	doLast {
+		println "${project.version}"
+	}
+}
+
+processResources.dependsOn createBuildInfoFile
+processResources.dependsOn createBuildInfoJsonFile

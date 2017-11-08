@@ -1,0 +1,55 @@
+.navbar {
+  margin-bottom: 0px;
+  border-radius: 0px;
+}
+
+.navbar-default {
+  border: 0;
+  background-color: #000000;
+}
+
+.navbar-nav > li > a {
+	padding: 3px 15px 3px 15px;
+}
+
+.navbar-brand {
+  background-color: #CCC;
+  margin: 5px 10px 0px 40px;
+  box-sizing: content-box;
+  height: 25px;
+  padding: 0px 0px 20px 0px;
+}
+
+.navbar-default .navbar-brand:hover, .navbar-default .navbar-brand:focus {
+  color: #CCC;
+  background-color: #CCC;
+}
+
+.navbar-brand > a > img {
+  height: 45px;
+  width: 50px;
+}
+
+.navbar-default .navbar-text {
+  color: #FFFFFF;
+  padding-top: 0px;
+  padding-left: 20px;
+  font-weight: 400;
+  font-size: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.navbar-default .navbar-text .navbar-bold {
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.navbar-default .navbar-text-right {
+  color: #FFFFFF;
+  padding-top: 0px;
+  font-weight: 700;
+  font-size: 12px;
+  float: right;
+  margin: 5px 40px 5px 15px;
+}

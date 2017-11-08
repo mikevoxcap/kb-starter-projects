@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" /><!-- Added for IE Compatibility View -->
+    <meta charset="utf-8">
+    <title>Angular 1 Spring Boot Starter Project UI</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+    <!-- build:css({src/main/resources/static/dev/serve,src/main/resources/static/scripts}) styles/vendor.css -->
+    <!-- bower:css -->
+    <!-- run `gulp inject` to automatically populate bower styles dependencies -->
+    <!-- endbower -->
+    <!-- endbuild -->
+
+    <!-- build:css({src/main/resources/static/dev/serve,src/main/resources/static/scripts}) styles/app.css -->
+    <!-- inject:css -->
+    <!-- css files will be automatically insert here -->
+    <!-- endinject -->
+    <!-- endbuild -->
+  </head>
+  <body>
+    <div ui-view></div>
+<!--     <a ui-sref="state1">State 1</a> -->
+<!--     <a ui-sref="state2">State 2</a> -->
+
+    <!-- build:js(src/main/resources/static/scripts) scripts/vendor.js -->
+    <!-- bower:js -->
+    <!-- run `gulp inject` to automatically populate bower script dependencies -->
+    <!-- endbower -->
+    <!-- endbuild -->
+
+    <!-- build:js({src/main/resources/static/dev/serve,src/main/resources/static/dev/partials,src/main/resources/static/scripts}) scripts/app.js -->
+    <!-- inject:js -->
+    <!-- js files will be automatically insert here -->
+    <!-- endinject -->
+
+    <!-- inject:partials -->
+    <!-- angular templates will be automatically converted in js and inserted here -->
+    <!-- endinject -->
+    <!-- endbuild -->
+
+    <!--Manual bootstrap so webapp properties are loaded into CONFIG constant-->
+    <script>
+      (function() {
+        var initInjector = angular.injector(['ng']);
+        var $http = initInjector.get('$http');
+        var path = '/angular-1-spring-boot-starter';
+
+        $http.get(path+'/api/webapp/props').then(
+          function (response) {
+            angular.module('config', []).constant('CONFIG', response.data);
+
+            angular.element(document).ready(function() {
+                angular.bootstrap(document, ['angular1SpringBootStarterUi']);
+              });
+          },
+          function (error) {
+            // The 'window.console' check is required for IE9. IE9 freezes on a
+            // console.log() call if the console is not available. That is, if
+            // the console is not open in Developer Tools.
+            if (window.console) {
+              console.log("error loading properties from /angular-1-spring-boot-starter/api/webapp/props");
+            }
+            angular.module('config', []).constant('CONFIG', {});
+
+            angular.element(document).ready(function() {
+                angular.bootstrap(document, ['angular1SpringBootStarterUi']);
+              });
+          }
+        );
+      })();
+    </script>
+  </body>
+</html>

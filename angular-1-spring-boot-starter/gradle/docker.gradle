@@ -1,0 +1,67 @@
+// This task relies on the application plugin to create a distribution zip
+// and it reorganizes the contents into a "fat" directory where all of the
+// dependencies go, and a "skinny" directory which only contains the
+// resources that are expected to change for every build.
+// This allows the Dockerfile to use "skinny layers" to reduce the size
+// of new docker image versions
+task dockerBuildPrep(dependsOn: 'distZip') {
+	def nameVersion = "${project.name}-${project.version}"
+	def srcFile = file("build/distributions/${nameVersion}.zip")
+	def fatDestDir = file("${buildDir}/docker/fat-layer")
+	def skinnyDestDir = file("${buildDir}/docker/skinny-layer")
+
+	inputs.files srcFile
+	outputs.files fatDestDir
+	outputs.files skinnyDestDir
+
+	doLast {
+		copy {
+			from zipTree(srcFile)
+			into fatDestDir
+		}
+		ant.move(file: new File(fatDestDir, nameVersion), tofile: new File(fatDestDir, project.name))
+		ant.move(
+			file: new File(fatDestDir, "${project.name}/bin"),
+			tofile: new File(skinnyDestDir, "${project.name}/bin"))
+		ant.move(
+			file: new File(fatDestDir, "${project.name}/lib/${nameVersion}.jar"),
+			tofile: new File(skinnyDestDir, "${project.name}/lib/${nameVersion}.jar"))
+	}
+}
+
+task dockerBuild(type: Exec, dependsOn: dockerBuildPrep) {
+	commandLine 'docker', 'build',
+		'-t', "${project.name}:latest",
+		'--build-arg', "PROJECT_NAME=${project.name}",
+		'--build-arg', "PROJECT_VERSION=${project.version}",
+		"."
+	inputs.files file("${buildDir}/docker/fat-layer")
+	inputs.files file("${buildDir}/docker/skinny-layer")
+	outputs.files file("${buildDir}/docker/built")
+	doLast {
+		new File("${buildDir}/docker/built").text = new Date().toString();
+	}
+
+}
+
+ext.dockerPublishPort = 9001
+
+task dockerRunBackground(dependsOn: dockerBuild) {
+	doLast {
+		println """running docker from within a gradle script seems to sometimes cause Gradle to hang
+to run in the background, run this docker command (will publish to port ${project.dockerPublishPort} on your docker machine):
+
+docker run --name ${project.name} --rm -d -p ${project.dockerPublishPort}:8080 ${project.name}:latest
+"""
+	}
+}
+
+task dockerRun(dependsOn: dockerBuild) {
+	doLast {
+		println """running docker from within a gradle script seems to sometimes cause Gradle to hang
+to run in the background, run this docker command (will publish to port ${project.dockerPublishPort} on your docker machine):
+
+docker run --name ${project.name} --rm -it -p ${project.dockerPublishPort}:8080 ${project.name}:latest
+"""
+	}
+}
